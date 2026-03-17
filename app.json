@@ -2,6 +2,7 @@
   "expo": {
     "name": "PathFinder",
     "slug": "PathFinder",
+    "scheme": "pathfinder",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,15 +16,38 @@
       "supportsTablet": true
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDrePcf-eCJy9zbuWqe8yIfmtR6V9hrx1M"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.anonymous.PathFinder"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-router",
+      "expo-sharing",
+      ["expo-maps",
+      {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
+      }]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1763c4ed-09cd-4d6f-99bc-cfdd0fb11f76"
+      }
     }
   }
 }
