@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   View,
@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Platform,
-  Animated,
 } from 'react-native';
 import theme from '../constants/theme';
 
@@ -23,22 +22,6 @@ import theme from '../constants/theme';
 export default function SaveModal({ visible, onSave, onCancel }) {
   const [title, setTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const sheetTranslateY = useRef(new Animated.Value(420)).current;
-
-  useEffect(() => {
-    if (!visible) {
-      sheetTranslateY.setValue(420);
-      return;
-    }
-
-    Animated.spring(sheetTranslateY, {
-      toValue: 0,
-      damping: 20,
-      stiffness: 220,
-      mass: 1,
-      useNativeDriver: true,
-    }).start();
-  }, [visible, sheetTranslateY]);
 
   const handleSave = async () => {
     if (isSaving) return;
@@ -67,7 +50,7 @@ export default function SaveModal({ visible, onSave, onCancel }) {
     <Modal
       visible={visible}
       transparent
-      animationType="none"
+      animationType="fade"
       statusBarTranslucent
       onRequestClose={handleCancel}
     >
@@ -83,11 +66,10 @@ export default function SaveModal({ visible, onSave, onCancel }) {
           keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
           pointerEvents="box-none"
         >
-          <Animated.View
+          <View
             className="bg-parchment rounded-tl-3xl rounded-tr-3xl px-6 pt-6"
             style={{
               paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-              transform: [{ translateY: sheetTranslateY }],
             }}
           >
         {/* Handle */}
@@ -127,7 +109,7 @@ export default function SaveModal({ visible, onSave, onCancel }) {
             <Text className="text-white font-bold text-[15px]">{isSaving ? 'Saving...' : 'Save'}</Text>
           </Pressable>
         </View>
-          </Animated.View>
+          </View>
         </KeyboardAvoidingView>
       </View>
     </Modal>

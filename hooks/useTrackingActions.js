@@ -3,6 +3,7 @@ import { useTracking } from '../context/TrackingContext';
 import { insertSession, finaliseSession, fetchSession, deleteSession } from '../db/database';
 import { haversineDistance } from '../utils/haversine';
 import { shareGpx } from '../utils/gpx';
+import { TIMER_TICK_INTERVAL } from '../constants/tracking';
 
 /**
  * Provides action handlers that wire together the TrackingContext,
@@ -21,7 +22,7 @@ export function useTrackingActions() {
 
   const _startTick = useCallback(() => {
     if (tickRef.current) return; // already running
-    tickRef.current = setInterval(() => tracking.tick(), 1000);
+    tickRef.current = setInterval(() => tracking.tick(), TIMER_TICK_INTERVAL);
   }, [tracking]);
 
   const _stopTick = useCallback(() => {
@@ -38,8 +39,10 @@ export function useTrackingActions() {
       _startTick();
     } catch (err) {
       console.error('Failed to start tracking session:', err);
+      // Stop any partial tick that may have started
+      _stopTick();
     }
-  }, [tracking, _startTick]);
+  }, [tracking, _startTick, _stopTick]);
 
   /**
    * Abort the current session — stops the clock, deletes the in-progress DB row,
@@ -80,12 +83,13 @@ export function useTrackingActions() {
 
       try {
         await finaliseSession(normalizedSessionId, Date.now(), title, distance, elapsedSeconds, coords);
+        tracking.reset();
+        return normalizedSessionId;
       } catch (err) {
         console.error('Failed to finalise tracking session:', err);
+        tracking.reset();
+        return null;
       }
-
-      tracking.reset();
-      return normalizedSessionId;
     },
     [tracking, _stopTick]
   );
@@ -113,8 +117,11 @@ export function useTrackingActions() {
     (location) => {
       if (!tracking.isTracking) return;
 
+      if (!location?.coords) return;
       const { latitude, longitude, altitude } = location.coords;
       const timestamp = location.timestamp;
+
+      if (latitude == null || longitude == null) return;
 
       let delta = 0;
       const prev = tracking.coords[tracking.coords.length - 1];

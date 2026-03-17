@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text } from 'react-native';
 import { formatDistance, formatDuration, formatSpeed } from '../utils/formatters';
 
 /**
  * Displays live or summary tracking statistics in a horizontal bar.
+ * Memoized to prevent unnecessary re-renders when props haven't changed.
  *
  * Props:
  *  - distance {number}  metres
  *  - duration {number}  seconds
  *  - speed    {number}  m/s  (optional – omitted when showing a summary)
  */
-export default function StatsBar({ distance = 0, duration = 0, speed }) {
+const StatsBar = memo(function StatsBar({ distance = 0, duration = 0, speed }) {
   const showSpeed = speed !== undefined;
 
   return (
@@ -26,7 +27,9 @@ export default function StatsBar({ distance = 0, duration = 0, speed }) {
       )}
     </View>
   );
-}
+});
+
+export default StatsBar;
 
 function StatItem({ label, value }) {
   return (

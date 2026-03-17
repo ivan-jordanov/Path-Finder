@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { View, Text, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 
 /**
  * Full-screen message shown when the user has denied location permission.
  * Offers a shortcut to the device's app settings so they can re-enable it.
+ * Memoized to prevent unnecessary re-renders.
  */
-export default function PermissionDenied() {
+const PermissionDenied = memo(function PermissionDenied() {
   const router = useRouter();
-  const openSettings = () => Linking.openSettings();
+  const openSettings = useCallback(() => Linking.openSettings(), []);
+  const goToMain = useCallback(() => router.replace('/'), [router]);
 
   return (
     <View className="flex-1 items-center justify-center bg-parchment px-9">
@@ -27,11 +29,13 @@ export default function PermissionDenied() {
         <Text className="text-white font-bold text-base">Open Settings</Text>
       </Pressable>
       <Pressable
-        onPress={() => router.replace('/')}
+        onPress={goToMain}
         className="mt-3 bg-white border border-forest active:bg-parchment-dark px-9 py-3.5 rounded-full"
       >
         <Text className="text-forest font-bold text-base">Go to Main Menu</Text>
       </Pressable>
     </View>
   );
-}
+});
+
+export default PermissionDenied;

@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Location from 'expo-location';
+import { LOCATION_TRACKING_CONFIG } from '../constants/tracking';
 
 /**
  * Custom hook for requesting location permissions and subscribing to
@@ -17,10 +18,16 @@ export function useLocation(enabled, onLocation) {
 
   // Request permission once on mount
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      setPermissionStatus(status);
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (!cancelled) setPermissionStatus(status);
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      }
     })();
+    return () => { cancelled = true; };
   }, []);
 
   // Start / stop the subscriber when `enabled` or permission changes
@@ -40,8 +47,8 @@ export function useLocation(enabled, onLocation) {
         const sub = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.BestForNavigation,
-            timeInterval: 1000,
-            distanceInterval: 2,
+            timeInterval: LOCATION_TRACKING_CONFIG.TIME_INTERVAL,
+            distanceInterval: LOCATION_TRACKING_CONFIG.DISTANCE_INTERVAL,
           },
           (loc) => {
             if (!cancelled) onLocation(loc);

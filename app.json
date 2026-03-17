@@ -13,7 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyDrePcf-eCJy9zbuWqe8yIfmtR6V9hrx1M"
+      }
     },
     "android": {
       "config": {
@@ -36,12 +39,7 @@
     "plugins": [
       "expo-sqlite",
       "expo-router",
-      "expo-sharing",
-      ["expo-maps",
-      {
-          "requestLocationPermission": true,
-          "locationPermission": "Allow $(PRODUCT_NAME) to use your location"
-      }]
+      "expo-sharing"
     ],
     "extra": {
       "router": {},

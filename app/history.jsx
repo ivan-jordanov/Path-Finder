@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -35,19 +35,72 @@ export default function HistoryScreen() {
     }, [loadSessions])
   );
 
-  const handleDelete = (id) => {
+  const handleDelete = useCallback((id) => {
     Alert.alert('Delete Route', 'This route will be permanently removed.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deleteSession(id);
-          loadSessions();
+          try {
+            await deleteSession(id);
+            loadSessions();
+          } catch (err) {
+            console.error('Failed to delete session:', err);
+            Alert.alert('Error', 'Could not delete this route.');
+          }
         },
       },
     ]);
-  };
+  }, [loadSessions]);
+
+  const renderHistoryItem = useCallback(
+    ({ item }) => (
+      <Pressable
+        onPress={() => router.push(`/${item.id}`)}
+        onLongPress={() => handleDelete(item.id)}
+        className="bg-white rounded-2xl p-4 border border-sand active:opacity-75"
+        style={({ pressed }) => pressed && { opacity: 0.75 }}
+      >
+        {/* Title */}
+        <Text className="text-base font-bold text-ink mb-0.5" numberOfLines={1}>
+          {item.title && item.title.length > 0 ? item.title : 'Unnamed Route'}
+        </Text>
+        <Text className="text-xs text-ink-muted mb-3">
+          {formatDate(item.started_at)}
+        </Text>
+
+        <View className="flex-row items-center">
+          {/* Distance */}
+          <View className="flex-1">
+            <Text className="text-[10px] font-semibold text-ink-muted uppercase tracking-wide mb-0.5">
+              Distance
+            </Text>
+            <Text className="text-[15px] font-semibold text-ink">
+              {formatDistance(item.distance)}
+            </Text>
+          </View>
+
+          {/* Divider */}
+          <View className="w-px h-7 bg-sand-light mx-3" />
+
+          {/* Duration */}
+          <View className="flex-1">
+            <Text className="text-[10px] font-semibold text-ink-muted uppercase tracking-wide mb-0.5">
+              Duration
+            </Text>
+            <Text className="text-[15px] font-semibold text-ink">
+              {formatDuration(item.duration)}
+            </Text>
+          </View>
+
+          {/* Arrow */}
+          <Text className="text-[22px] text-forest-light pl-2">›</Text>
+        </View>
+      </Pressable>
+    ),
+    [router, handleDelete]
+  );
 
   if (loading) {
     return (
@@ -78,50 +131,7 @@ export default function HistoryScreen() {
       contentContainerClassName="p-4 gap-3"
       data={sessions}
       keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => (
-        <Pressable
-          onPress={() => router.push(`/${item.id}`)}
-          onLongPress={() => handleDelete(item.id)}
-          className="bg-white rounded-2xl p-4 border border-sand active:opacity-75"
-          style={({ pressed }) => pressed && { opacity: 0.75 }}
-        >
-          {/* Title */}
-          <Text className="text-base font-bold text-ink mb-0.5" numberOfLines={1}>
-            {item.title && item.title.length > 0 ? item.title : 'Unnamed Route'}
-          </Text>
-          <Text className="text-xs text-ink-muted mb-3">
-            {formatDate(item.started_at)}
-          </Text>
-
-          <View className="flex-row items-center">
-            {/* Distance */}
-            <View className="flex-1">
-              <Text className="text-[10px] font-semibold text-ink-muted uppercase tracking-wide mb-0.5">
-                Distance
-              </Text>
-              <Text className="text-[15px] font-semibold text-ink">
-                {formatDistance(item.distance)}
-              </Text>
-            </View>
-
-            {/* Divider */}
-            <View className="w-px h-7 bg-sand-light mx-3" />
-
-            {/* Duration */}
-            <View className="flex-1">
-              <Text className="text-[10px] font-semibold text-ink-muted uppercase tracking-wide mb-0.5">
-                Duration
-              </Text>
-              <Text className="text-[15px] font-semibold text-ink">
-                {formatDuration(item.duration)}
-              </Text>
-            </View>
-
-            {/* Arrow */}
-            <Text className="text-[22px] text-forest-light pl-2">›</Text>
-          </View>
-        </Pressable>
-      )}
+      renderItem={renderHistoryItem}
     />
   );
 }
